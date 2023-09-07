@@ -190,15 +190,14 @@ func makeTraderJoeScraper(exchange dia.Exchange, listenByAddress bool, restDial 
 }
 
 // GetSwapsChannel returns a channel for swaps of the pair with pair address.
-func (tjs *TraderJoeScraper) GetSwapsChannel(pairAddress common.Address) (chan *traderjoe.TraderjoeLBPairCreated, error) {
-	sink := make(chan *traderjoe.TraderjoeLBPairCreated)
-	var pairFiltererContract *traderjoe.TraderjoeFilterer
+func (tjs *TraderJoeScraper) GetSwapsChannel(pairAddress common.Address) (chan *traderjoeILBPair.ILBPairSwap, error) {
+	sink := make(chan *traderjoeILBPair.ILBPairSwap)
 
-	pairFiltererContract, err := traderjoe.NewTraderjoeFilterer(pairAddress, tjs.WsClient)
+	pairFiltererContract, err := traderjoeILBPair.NewILBPairFilterer(pairAddress, tjs.WsClient)
 	if err != nil {
 		log.Fatal(err)
 	}
-	_, err = pairFiltererContract.WatchOwnershipTransferred(&bind.WatchOpts{}, sink, []common.Address{}, []common.Address{})
+	_, err = pairFiltererContract.WatchSwap(&bind.WatchOpts{}, sink, []common.Address{}, []common.Address{})
 	if err != nil {
 		log.Error("error in get swaps channel: ", err)
 	}
