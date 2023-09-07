@@ -206,14 +206,18 @@ func (tjs *TraderJoeScraper) GetSwapsChannel(pairAddress common.Address) (chan *
 }
 
 // TODO: Return here.
-func (tjs *TraderJoeScraper) normalizeTraderJoeSwap(swapI interface{}) (normalizedSwap TraderJoeSwap, err error) {
+func (tjs *TraderJoeScraper) normalizeTraderJoeSwap(swapI interface{}) (normalizedSwap TraderJoeSwap) {
 	switch swap := swapI.(type) {
-	case traderjoe.TraderjoeLBPairCreated:
+	case traderjoeILBPair.ILBPairSwap:
 		pair := MapOfPools[swap.Raw.Address.Hex()]
 		decimals0 := int(pair.Token0.Decimals)
 		decimals1 := int(pair.Token1.Decimals)
-		amount0, _ := new(big.Float).Quo(big.NewFloat(0).SetInt(), new(big.Float).SetFloat64(math.Pow10(decimals0))).Float64()
-		amount1, _ := new(big.Float).Quo(big.NewFloat(0).SetInt(), new(big.Float).SetFloat64(math.Pow10(decimals1))).Float64()
+
+		amountIn := new(big.Int).SetBytes(swap.AmountsIn[:])
+		amountOut := new(big.Int).SetBytes(swap.AmountsOut[:])
+
+		amount0, _ := new(big.Float).Quo(big.NewFloat(0).SetInt(amountIn), new(big.Float).SetFloat64(math.Pow10(decimals0))).Float64()
+		amount1, _ := new(big.Float).Quo(big.NewFloat(0).SetInt(amountOut), new(big.Float).SetFloat64(math.Pow10(decimals1))).Float64()
 
 		normalizedSwap = TraderJoeSwap{
 			ID:        swap.Raw.TxHash.Hex(),
